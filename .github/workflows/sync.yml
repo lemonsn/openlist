@@ -1,0 +1,57 @@
+name: Sync OpenList Repository
+
+on:
+  schedule:
+    - cron: '30 * * * *'  # 每天凌晨执行，可根据需要调整时间
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync-repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史
+
+      - name: Backup sync.yml and daily.yml if exists
+        run: |
+          # 备份 sync.yml
+          if [ -f .github/workflows/sync.yml ]; then
+            cp .github/workflows/sync.yml /tmp/sync.yml
+          fi
+          # 备份 daily.yml
+          if [ -f .github/workflows/daily.yml ]; then
+            cp .github/workflows/daily.yml /tmp/daily.yml
+          fi
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/OpenListTeam/OpenList.git || true
+          git fetch upstream
+
+      - name: Sync with upstream
+        run: |
+          git checkout main  # 假设主分支为main，根据实际情况修改
+          git pull upstream main --rebase
+
+      - name: Restore sync.yml and daily.yml
+        run: |
+          # 恢复 sync.yml
+          if [ -f /tmp/sync.yml ]; then
+            mkdir -p .github/workflows
+            mv /tmp/sync.yml .github/workflows/sync.yml
+            git add .github/workflows/sync.yml
+          fi
+          # 恢复 daily.yml
+          if [ -f /tmp/daily.yml ]; then
+            mkdir -p .github/workflows
+            mv /tmp/daily.yml .github/workflows/daily.yml
+            git add .github/workflows/daily.yml
+          fi
+          # 提交恢复的文件（若有变更）
+          git commit -m "Restore sync.yml and daily.yml after sync" || echo "No changes to commit for sync.yml/daily.yml"
+
+      - name: Push changes
+        run: |
+          git push origin main  # 推送至当前仓库主分支
