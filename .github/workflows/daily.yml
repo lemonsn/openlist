@@ -83,7 +83,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: beta
-          name: openlist_${{ env.SHA }}_${{ matrix.target }}
+          name: openlist自动编译
           body: |
             Automated build release
             - Generated at **${{ steps.timestamp.outputs.date }} UTC**
