@@ -71,7 +71,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-
+      - name: Delete beta tag
+        run: git tag -d beta
+        continue-on-error: true
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
