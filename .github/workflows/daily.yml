@@ -68,7 +68,11 @@ jobs:
             -X github.com/OpenListTeam/OpenList/v4/internal/conf.GitCommit=${GIT_COMMIT} \
             -X github.com/OpenListTeam/OpenList/v4/internal/conf.Version=beta \
             -X github.com/OpenListTeam/OpenList/v4/internal/conf.WebVersion=dev"
-          go build -trimpath -tags=jsoniter -ldflags="$LDFLAGS" -o build/openlist${{ matrix.goos == 'windows' && '.exe' || '' }} .
+          OUT_NAME="openlist_${{ matrix.target }}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            OUT_NAME="${OUT_NAME}.exe"
+          fi
+          go build -trimpath -tags=jsoniter -ldflags="$LDFLAGS" -o "build/${OUT_NAME}" .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
